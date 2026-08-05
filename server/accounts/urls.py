@@ -6,7 +6,9 @@ from .views import (
     GoogleLoginView,
     UserProfileView,
     UserDetailView,
-    FollowUserView
+    FollowUserView,
+    UpgradePlanView,
+    UserListView
 )
 
 
@@ -16,6 +18,8 @@ urlpatterns = [
     path('login/google/', GoogleLoginView.as_view(), name='google_login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('upgrade/', UpgradePlanView.as_view(), name='upgrade_plan'),
+    path('users/', UserListView.as_view(), name='user_list'),
     path('users/<str:username>/', UserDetailView.as_view(), name='user_detail'),
     path('users/<str:username>/follow/', FollowUserView.as_view(), name='follow_user'),
 ]

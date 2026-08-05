@@ -105,7 +105,45 @@ class PostViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        post = serializer.save(author=self.request.user)
+        user = self.request.user
+        plan = getattr(user, 'subscription_plan', 'free')
+
+        # Check if paid plan is expired
+        if user.subscription_end_date and timezone.now() > user.subscription_end_date:
+            plan = 'free'
+
+        # Limit enforcement logic
+        if plan == 'free':
+            limit = 3
+            count = Post.objects.filter(author=user).count()
+            period_text = 'in total'
+        elif plan == 'creator':
+            limit = 10
+            one_month_ago = timezone.now() - timezone.timedelta(days=30)
+            count = Post.objects.filter(author=user, created_at__gte=one_month_ago).count()
+            period_text = 'this month'
+        elif plan == 'studio':
+            limit = 25
+            one_month_ago = timezone.now() - timezone.timedelta(days=30)
+            count = Post.objects.filter(author=user, created_at__gte=one_month_ago).count()
+            period_text = 'this month'
+        elif plan == 'enterprise':
+            limit = 30
+            one_month_ago = timezone.now() - timezone.timedelta(days=30)
+            count = Post.objects.filter(author=user, created_at__gte=one_month_ago).count()
+            period_text = 'this month'
+        else:
+            limit = 3
+            count = Post.objects.filter(author=user).count()
+            period_text = 'in total'
+
+        if count >= limit:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied(
+                f"LIMIT_EXCEEDED: You have reached your limit of {limit} blogs {period_text} for your {plan.title()} plan. Please upgrade your subscription."
+            )
+
+        post = serializer.save(author=user)
         if post.status == 'published' and not post.published_at:
             post.published_at = timezone.now()
             post.save()

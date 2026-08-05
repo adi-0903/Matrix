@@ -155,9 +155,31 @@ const CreatePost = () => {
                             color: '#ff3b30',
                             padding: '12px 16px',
                             borderRadius: '8px',
-                            marginBottom: '20px'
+                            marginBottom: '20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '16px',
+                            flexWrap: 'wrap'
                         }}>
-                            {error}
+                            <span>{error.replace('LIMIT_EXCEEDED: ', '')}</span>
+                            {error.includes('LIMIT_EXCEEDED') && (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/pricing')}
+                                    style={{
+                                        background: 'linear-gradient(135deg, var(--aqua), var(--lavender))',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        padding: '8px 16px',
+                                        color: '#060608',
+                                        fontWeight: '600',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Upgrade Plan
+                                </button>
+                            )}
                         </div>
                     )}
                     <div className="form-grid">

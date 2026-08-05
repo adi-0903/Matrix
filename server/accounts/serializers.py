@@ -9,16 +9,26 @@ class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model"""
     
     full_name = serializers.ReadOnlyField()
+    is_following = serializers.SerializerMethodField()
     
     class Meta:
         model = User
         fields = [
-            'id', 'username', 'email', 'first_name', 'last_name',
+            'id', 'uid', 'username', 'email', 'first_name', 'last_name',
             'full_name', 'bio', 'avatar', 'location', 'website',
-            'twitter', 'github', 'followers_count', 'following_count',
+            'twitter', 'github', 'subscription_plan', 
+            'subscription_start_date', 'subscription_end_date',
+            'followers_count', 'following_count', 'is_following',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at', 'followers_count', 'following_count']
+        read_only_fields = ['id', 'uid', 'created_at', 'updated_at', 'followers_count', 'following_count']
+
+    def get_is_following(self, obj):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            from .models import Follow
+            return Follow.objects.filter(follower=request.user, following=obj).exists()
+        return False
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

@@ -365,7 +365,86 @@ const Profile = ({ onProfileUpdate }) => {
                                 <h1 className="display-name">{user?.full_name || user?.username}</h1>
                                 <span className="verified-badge" title="Verified Creator">✦</span>
                             </div>
-                            <p className="username-handle">@{user?.username}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
+                                <p className="username-handle" style={{ margin: 0 }}>@{user?.username}</p>
+                                {user?.uid && (
+                                    <button
+                                        type="button"
+                                        title="Click to copy your unique UID"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(user.uid)
+                                            alert(`Copied your unique UID: ${user.uid}`)
+                                        }}
+                                        style={{
+                                            background: 'rgba(106, 233, 193, 0.15)',
+                                            border: '1px solid rgba(106, 233, 193, 0.3)',
+                                            borderRadius: '8px',
+                                            padding: '2px 10px',
+                                            color: 'var(--aqua)',
+                                            fontSize: '0.8rem',
+                                            fontWeight: '700',
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}
+                                    >
+                                        🆔 UID: {user.uid} 📋
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Subscription Plan Badge & Expiration Info */}
+                            <div style={{
+                                margin: '12px 0 16px 0',
+                                padding: '10px 16px',
+                                borderRadius: '12px',
+                                background: user?.subscription_plan && user.subscription_plan !== 'free'
+                                    ? 'linear-gradient(135deg, rgba(106, 233, 193, 0.12), rgba(200, 181, 255, 0.12))'
+                                    : 'rgba(255, 255, 255, 0.04)',
+                                border: user?.subscription_plan && user.subscription_plan !== 'free'
+                                    ? '1px solid rgba(200, 181, 255, 0.3)'
+                                    : '1px solid rgba(255, 255, 255, 0.1)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                flexWrap: 'wrap'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span style={{ fontSize: '1.1rem' }}>
+                                        {user?.subscription_plan === 'creator' && '⚡'}
+                                        {user?.subscription_plan === 'studio' && '🚀'}
+                                        {user?.subscription_plan === 'enterprise' && '👑'}
+                                        {(user?.subscription_plan === 'free' || !user?.subscription_plan) && '🌱'}
+                                    </span>
+                                    <span style={{
+                                        fontWeight: '700',
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.85rem',
+                                        letterSpacing: '0.05em',
+                                        color: user?.subscription_plan && user.subscription_plan !== 'free' ? '#c8b5ff' : 'var(--muted)'
+                                    }}>
+                                        {(user?.subscription_plan || 'free')} Plan
+                                    </span>
+                                </div>
+
+                                {user?.subscription_start_date && user?.subscription_end_date && user.subscription_plan !== 'free' ? (
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', gap: '8px' }}>
+                                        <span>• Start: {formatDate(user.subscription_start_date)}</span>
+                                        <span>• Expires: <strong style={{ color: '#67e5d4' }}>{formatDate(user.subscription_end_date)}</strong></span>
+                                    </div>
+                                ) : (
+                                    <Link to="/pricing" style={{
+                                        fontSize: '0.8rem',
+                                        color: 'var(--aqua)',
+                                        fontWeight: '600',
+                                        textDecoration: 'none',
+                                        marginLeft: '4px'
+                                    }}>
+                                        Upgrade Plan →
+                                    </Link>
+                                )}
+                            </div>
                             
                             <p className="bio-description-text">
                                 {user?.bio || 'No transmission recorded yet. Write a bio in Settings.'}

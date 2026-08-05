@@ -3,9 +3,24 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+import random
+import string
+
+
+def generate_unique_uid():
+    prefix = 'MM-'
+    chars = string.ascii_uppercase + string.digits
+    for _ in range(100):
+        code = prefix + ''.join(random.choices(chars, k=6))
+        if not User.objects.filter(uid=code).exists():
+            return code
+    return prefix + ''.join(random.choices(chars, k=8))
+
+
 class User(AbstractUser):
     """Custom User model with additional fields"""
     
+    uid = models.CharField(max_length=20, unique=True, blank=True, null=True, db_index=True)
     email = models.EmailField(_('email address'), unique=True)
     bio = models.TextField(max_length=500, blank=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
@@ -13,6 +28,16 @@ class User(AbstractUser):
     website = models.URLField(max_length=200, blank=True)
     twitter = models.CharField(max_length=100, blank=True)
     github = models.CharField(max_length=100, blank=True)
+    
+    PLAN_CHOICES = [
+        ('free', 'Free'),
+        ('creator', 'Creator'),
+        ('studio', 'Studio'),
+        ('enterprise', 'Enterprise'),
+    ]
+    subscription_plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='free')
+    subscription_start_date = models.DateTimeField(null=True, blank=True)
+    subscription_end_date = models.DateTimeField(null=True, blank=True)
     
     # Stats
     followers_count = models.IntegerField(default=0)
@@ -32,6 +57,11 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        if not self.uid:
+            self.uid = generate_unique_uid()
+        super().save(*args, **kwargs)
     
     @property
     def full_name(self):

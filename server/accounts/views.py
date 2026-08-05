@@ -30,6 +30,12 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
+        try:
+            from .emails import send_user_welcome_email
+            send_user_welcome_email(user)
+        except Exception as e:
+            print(f"Error sending registration email: {e}")
+
         return Response({
             'user': UserSerializer(user).data,
             'message': 'User registered successfully'
@@ -186,3 +192,38 @@ class FollowUserView(APIView):
             'message': message,
             'is_following': created
         })
+
+
+class UpgradePlanView(APIView):
+    """Upgrade user subscription plan"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        plan = request.data.get('plan', '').lower()
+        if plan not in ['free', 'creator', 'studio', 'enterprise']:
+            return Response({'error': 'Invalid plan selection.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.subscription_plan = plan
+        request.user.save()
+
+        return Response({
+            'message': f'Subscription upgraded to {plan.title()} successfully!',
+            'user': UserSerializer(request.user).data
+        }, status=status.HTTP_200_OK)
+
+
+from rest_framework import filters
+
+class UserListView(generics.ListAPIView):
+    """List and search users"""
+    queryset = User.objects.all().order_by('-followers_count', '-created_at')
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['uid', 'username', 'first_name', 'last_name', 'email', 'bio']
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+

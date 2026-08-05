@@ -88,6 +88,17 @@ export const api = {
       method: 'PATCH',
       body: userData instanceof FormData ? userData : JSON.stringify(userData),
     }),
+    upgradePlan: (plan) => apiClient('/auth/upgrade/', {
+      method: 'POST',
+      body: JSON.stringify({ plan }),
+    }),
+    getUsers: (params = {}) => {
+      const queryString = new URLSearchParams(params).toString()
+      return apiClient(`/users/?${queryString}`)
+    },
+    followUser: (username) => apiClient(`/users/${username}/follow/`, {
+      method: 'POST',
+    }),
   },
 
   // Blog endpoints

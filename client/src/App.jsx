@@ -20,6 +20,7 @@ import CreateBlogs from './pages/CreateBlogs'
 import SeriesDetail from './pages/SeriesDetail'
 import SeasonDetail from './pages/SeasonDetail'
 import Profile from './pages/Profile'
+import Creators from './pages/Creators'
 import ThreeBackground from './components/ThreeBackground'
 import api from './api'
 import Splash from './components/Splash'
@@ -85,6 +86,9 @@ function App() {
           <Link to="/events" className={location.pathname === '/events' ? 'active' : ''}>
             Events
           </Link>
+          <Link to="/creators" className={location.pathname === '/creators' ? 'active' : ''}>
+            Creators
+          </Link>
           <Link to="/about" className={location.pathname === '/about' ? 'active' : ''}>
             About
           </Link>
@@ -145,6 +149,7 @@ function App() {
         <Route path="/signin" element={<Auth mode="signin" setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/signup" element={<Auth mode="signup" setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/creators" element={<Creators />} />
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<Profile onProfileUpdate={setUser} />} />
         <Route path="*" element={<Home />} />
