@@ -44,10 +44,7 @@ INSTALLED_APPS = [
     'accounts',
     'blog',
     'newsletter',
-<<<<<<< HEAD
     'reading_journal',
-=======
->>>>>>> 08eb11d74f07c61ec15dfd839185918227dc17fe
 ]
 
 MIDDLEWARE = [

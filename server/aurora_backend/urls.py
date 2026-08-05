@@ -11,10 +11,7 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('api/blog/', include('blog.urls')),
     path('api/newsletter/', include('newsletter.urls')),
-<<<<<<< HEAD
     path('api/reading-journal/', include('reading_journal.urls')),
-=======
->>>>>>> 08eb11d74f07c61ec15dfd839185918227dc17fe
 ]
 
 # Serve media files in development
