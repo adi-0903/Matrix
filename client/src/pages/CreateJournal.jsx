@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles } from '../icons'
 import Footer from '../components/Footer'
 import api from '../api'
+import MarkdownEditor from '../components/MarkdownEditor'
 
 const CreateJournal = () => {
     const navigate = useNavigate()
@@ -24,6 +25,31 @@ const CreateJournal = () => {
         genre: '',
         read_time: 0
     })
+
+    // Load draft on mount
+    useEffect(() => {
+        const draft = localStorage.getItem('journal_draft')
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft)
+                if (window.confirm('You have an unsaved draft. Would you like to restore it?')) {
+                    setFormData(prev => ({ ...prev, ...parsed }))
+                } else {
+                    localStorage.removeItem('journal_draft')
+                }
+            } catch (e) {}
+        }
+    }, [])
+
+    // Auto-save
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (formData.topic || formData.small_description || formData.full_details) {
+                localStorage.setItem('journal_draft', JSON.stringify(formData))
+            }
+        }, 10000)
+        return () => clearInterval(timer)
+    }, [formData])
     
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(false)
@@ -82,6 +108,7 @@ const CreateJournal = () => {
                 post_type: 'journal'
             })
 
+            localStorage.removeItem('journal_draft')
             setSuccess('Journal created successfully!')
             setTimeout(() => {
                 navigate('/journal')
@@ -196,15 +223,11 @@ const CreateJournal = () => {
                         <label htmlFor="full_details" className="form-label">
                             Full Details <span className="required">*</span>
                         </label>
-                        <textarea
-                            id="full_details"
-                            name="full_details"
+                        <MarkdownEditor
                             value={formData.full_details}
                             onChange={handleChange}
-                            className="form-textarea large"
                             placeholder="Write your complete journal entry here..."
-                            rows={12}
-                            required
+                            minHeight="400px"
                         />
                     </div>
 

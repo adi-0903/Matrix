@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Clock, User, Calendar } from '../icons'
 import Footer from '../components/Footer'
 import api from '../api'
+import { formatContent } from '../utils/markdown'
 const BlogPost = () => {
     const { slug } = useParams()
     const [post, setPost] = useState(null)
@@ -38,92 +39,7 @@ const BlogPost = () => {
         })
     }
 
-    const formatContent = (content) => {
-        // Simple markdown-like formatting
-        const lines = content.split('\n')
-        const elements = []
-        let inList = false
-        let listItems = []
-        let isFirstH1 = true
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i]
-            
-            if (line.startsWith('# ')) {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                // Skip the first H1 if it matches the main title to avoid duplication
-                if (isFirstH1 && line.substring(2).trim() === post.title.trim()) {
-                    isFirstH1 = false
-                    continue
-                }
-                elements.push(<h1 key={i} className="post-title">{line.substring(2)}</h1>)
-            } else if (line.startsWith('## ')) {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<h2 key={i} className="post-subtitle">{line.substring(3)}</h2>)
-            } else if (line.startsWith('### ')) {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<h3 key={i} className="post-heading">{line.substring(4)}</h3>)
-            } else if (line.startsWith('- ')) {
-                // Add to list
-                inList = true
-                listItems.push(<li key={i} className="post-list-item">{line.substring(2)}</li>)
-            } else if (line.startsWith('---')) {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<hr key={i} className="post-divider" />)
-            } else if (line.startsWith('*') && line.endsWith('*')) {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<p key={i} className="post-italic">{line.slice(1, -1)}</p>)
-            } else if (line.trim() === '') {
-                // Flush any pending list on empty line
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<br key={i} />)
-            } else {
-                // Flush any pending list
-                if (inList) {
-                    elements.push(<ul key={`list-${i}`} className="post-list">{listItems}</ul>)
-                    listItems = []
-                    inList = false
-                }
-                elements.push(<p key={i} className="post-paragraph">{line}</p>)
-            }
-        }
-
-        // Flush any remaining list
-        if (inList) {
-            elements.push(<ul key="list-final" className="post-list">{listItems}</ul>)
-        }
-
-        return elements
-    }
+    const formattedContent = formatContent(post.content, post.title)
 
     if (loading) {
         return (
@@ -226,7 +142,7 @@ const BlogPost = () => {
                 </header>
 
                 <div className="post-content">
-                    {formatContent(post.content)}
+                    {formattedContent}
                 </div>
             </motion.article>
 

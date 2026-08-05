@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles, Image } from '../icons'
 import Footer from '../components/Footer'
 import api from '../api'
+import MarkdownEditor from '../components/MarkdownEditor'
 
 const CreateBlogs = () => {
     const navigate = useNavigate()
@@ -24,6 +25,42 @@ const CreateBlogs = () => {
         image: null,
         image_preview: ''
     })
+
+    // Load draft on mount
+    useEffect(() => {
+        const draft = localStorage.getItem('blog_draft')
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft)
+                if (window.confirm('You have an unsaved draft. Would you like to restore it?')) {
+                    setFormData(prev => ({
+                        ...prev,
+                        title: parsed.title || '',
+                        excerpt: parsed.excerpt || '',
+                        content: parsed.content || ''
+                    }))
+                } else {
+                    localStorage.removeItem('blog_draft')
+                }
+            } catch (e) {
+                // Ignore parse errors
+            }
+        }
+    }, [])
+
+    // Auto-save every 10 seconds if there's content
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (formData.title || formData.excerpt || formData.content) {
+                localStorage.setItem('blog_draft', JSON.stringify({
+                    title: formData.title,
+                    excerpt: formData.excerpt,
+                    content: formData.content
+                }))
+            }
+        }, 10000)
+        return () => clearInterval(timer)
+    }, [formData.title, formData.excerpt, formData.content])
     
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -87,6 +124,7 @@ const CreateBlogs = () => {
 
             const response = await api.blog.createPost(formDataToSend)
 
+            localStorage.removeItem('blog_draft')
             setSuccess('Blog post created successfully!')
             setTimeout(() => {
                 navigate('/blogs')
@@ -279,29 +317,11 @@ const CreateBlogs = () => {
                         }}>
                             Content <span className="required" style={{ color: 'var(--amber)', marginLeft: '4px' }}>*</span>
                         </label>
-                        <textarea
-                            id="content"
-                            name="content"
+                        <MarkdownEditor
                             value={formData.content}
                             onChange={handleChange}
-                            className="form-textarea large"
-                            style={{
-                                width: '100%',
-                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04))',
-                                border: '2px solid rgba(255, 255, 255, 0.1)',
-                                borderRadius: '16px',
-                                padding: '16px 20px',
-                                fontSize: '1rem',
-                                color: '#e4e4ef',
-                                fontFamily: 'inherit',
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                backdropFilter: 'blur(10px)',
-                                resize: 'vertical',
-                                minHeight: '200px'
-                            }}
                             placeholder="Write your full blog content here..."
-                            rows={8}
-                            required
+                            minHeight="400px"
                         />
                     </div>
 

@@ -9,6 +9,8 @@ from .views import (
     CommentViewSet
 )
 
+from .ai_views import AIAssistView
+
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'series', SeriesViewSet, basename='series')
@@ -19,4 +21,5 @@ router.register(r'comments', CommentViewSet, basename='comment')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('ai-assist/', AIAssistView.as_view(), name='ai-assist'),
 ]

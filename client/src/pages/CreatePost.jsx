@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Sparkles } from '../icons'
 import Footer from '../components/Footer'
 import api from '../api'
+import MarkdownEditor from '../components/MarkdownEditor'
 
 const CreatePost = () => {
     const navigate = useNavigate()
@@ -20,6 +21,31 @@ const CreatePost = () => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [imagePreview, setImagePreview] = useState(null)
+
+    // Load draft on mount
+    useEffect(() => {
+        const draft = localStorage.getItem('post_draft')
+        if (draft) {
+            try {
+                const parsed = JSON.parse(draft)
+                if (window.confirm('You have an unsaved draft. Would you like to restore it?')) {
+                    setFormData(prev => ({ ...prev, ...parsed }))
+                } else {
+                    localStorage.removeItem('post_draft')
+                }
+            } catch (e) {}
+        }
+    }, [])
+
+    // Auto-save
+    useEffect(() => {
+        const timer = setInterval(() => {
+            if (formData.title || formData.excerpt || formData.content) {
+                localStorage.setItem('post_draft', JSON.stringify(formData))
+            }
+        }, 10000)
+        return () => clearInterval(timer)
+    }, [formData])
 
     const [categories, setCategories] = useState([])
     const icons = ['📝', '✍️', '📖', '🎨', '💡', '🌟', '🚀', '💻', '📷', '🎭', '🎵', '🌍']
@@ -83,6 +109,8 @@ const CreatePost = () => {
                 // For now, we'll just create the post without the image
                 console.log('Image upload to be implemented')
             }
+
+            localStorage.removeItem('post_draft')
 
             // Show success message and redirect
             alert(`Post ${formData.status === 'draft' ? 'saved as draft' : 'published'} successfully!`)
@@ -177,14 +205,11 @@ const CreatePost = () => {
                                     <span className="label-text">Content</span>
                                     <span className="label-required">*</span>
                                 </label>
-                                <textarea
-                                    name="content"
+                                <MarkdownEditor
                                     value={formData.content}
                                     onChange={handleChange}
                                     placeholder="Write your story here... Use markdown for formatting."
-                                    className="textarea-large"
-                                    rows={15}
-                                    required
+                                    minHeight="400px"
                                 />
                             </div>
 

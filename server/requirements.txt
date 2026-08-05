@@ -8,9 +8,10 @@ django-cors-headers==4.3.1
 psycopg[binary]>=3.2.10
 dj-database-url==2.1.0
 
-# Authentication
+# Authentication & AI
 djangorestframework-simplejwt==5.3.1
 google-auth==2.49.2
+google-generativeai==0.8.3
 
 # Utilities
 Pillow>=10.3.0

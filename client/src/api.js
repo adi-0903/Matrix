@@ -133,6 +133,10 @@ export const api = {
     }),
     getSeasonEpisodes: (seasonSlug) => apiClient(`/blog/seasons/${seasonSlug}/episodes/`),
     getEvents: () => apiClient('/blog/events/'),
+    aiAssist: (data) => apiClient('/blog/ai-assist/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   },
 
   // File upload helper
