@@ -10,6 +10,17 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Python 3.14 compatibility patch for Django Context copying
+try:
+    import django.template.context
+    def _safe_context_copy(self):
+        obj = object.__new__(self.__class__)
+        obj.dicts = self.dicts[:]
+        return obj
+    django.template.context.BaseContext.__copy__ = _safe_context_copy
+except Exception as e:
+    pass
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-this-in-production')
 
