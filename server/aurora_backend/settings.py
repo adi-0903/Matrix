@@ -10,7 +10,7 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Python 3.14 compatibility patch for Django Context copying
+# Python 3.14 compatibility patch for Django Context copying & template tag rendering
 try:
     import django.template.context
     import copy
@@ -21,8 +21,21 @@ try:
         rc = getattr(self, 'render_context', None)
         obj.render_context = copy.copy(rc) if rc is not None else None
         return obj
+
+    def _safe_context_new(self, values=None):
+        new_context = object.__new__(self.__class__)
+        new_context.dicts = self.dicts[:]
+        if values is not None:
+            new_context.dicts.append(values)
+        new_context.template = getattr(self, 'template', None)
+        rc = getattr(self, 'render_context', None)
+        new_context.render_context = copy.copy(rc) if rc is not None else None
+        return new_context
+
     django.template.context.BaseContext.__copy__ = _safe_context_copy
     django.template.context.Context.__copy__ = _safe_context_copy
+    django.template.context.BaseContext.new = _safe_context_new
+    django.template.context.Context.new = _safe_context_new
 except Exception as e:
     pass
 
