@@ -15,6 +15,10 @@ from .serializers import (
     UserUpdateSerializer
 )
 
+from django.utils import timezone
+from datetime import timedelta
+from .emails import send_plan_activation_email
+
 User = get_user_model()
 
 
@@ -203,7 +207,17 @@ class UpgradePlanView(APIView):
         if plan not in ['free', 'creator', 'studio', 'enterprise']:
             return Response({'error': 'Invalid plan selection.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        now = timezone.now()
         request.user.subscription_plan = plan
+        if plan == 'free':
+            request.user.subscription_start_date = None
+            request.user.subscription_end_date = None
+        else:
+            days = 30
+            request.user.subscription_start_date = now
+            request.user.subscription_end_date = now + timedelta(days=days)
+            send_plan_activation_email(request.user, plan, days)
+
         request.user.save()
 
         return Response({

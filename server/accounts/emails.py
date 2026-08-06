@@ -1,9 +1,18 @@
+import threading
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils.html import strip_tags
 
+def send_async(fn):
+    """Decorator to execute email sending functions asynchronously in a daemon thread"""
+    def wrapper(*args, **kwargs):
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs, daemon=True)
+        thread.start()
+    return wrapper
+
+@send_async
 def send_plan_activation_email(user, plan_name, days):
-    """Send beautiful plan activation confirmation email to user"""
+    """Send beautiful plan activation confirmation email to user (non-blocking)"""
     if not user or not user.email:
         return
 
@@ -134,8 +143,9 @@ def send_plan_activation_email(user, plan_name, days):
         print(f"Error sending activation email to {user.email}: {e}")
 
 
+@send_async
 def send_user_welcome_email(user):
-    """Send welcome email to newly registered user with their Unique UID"""
+    """Send welcome email to newly registered user with their Unique UID (non-blocking)"""
     if not user or not user.email:
         return
 

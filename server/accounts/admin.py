@@ -129,32 +129,41 @@ class UserAdmin(BaseUserAdmin):
     @admin.action(description="⚡ Activate Creator Plan (30 Days)")
     def activate_creator_30_days(self, request, queryset):
         now = timezone.now()
-        updated = queryset.update(
-            subscription_plan='creator',
-            subscription_start_date=now,
-            subscription_end_date=now + timedelta(days=30)
-        )
-        self.message_user(request, f"Successfully activated Creator plan for {updated} user(s).")
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'creator'
+            user.subscription_start_date = now
+            user.subscription_end_date = now + timedelta(days=30)
+            user.save()
+            send_plan_activation_email(user, 'creator', 30)
+            count += 1
+        self.message_user(request, f"Successfully activated Creator plan for {count} user(s).")
 
     @admin.action(description="🚀 Activate Studio Plan (30 Days)")
     def activate_studio_30_days(self, request, queryset):
         now = timezone.now()
-        updated = queryset.update(
-            subscription_plan='studio',
-            subscription_start_date=now,
-            subscription_end_date=now + timedelta(days=30)
-        )
-        self.message_user(request, f"Successfully activated Studio plan for {updated} user(s).")
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'studio'
+            user.subscription_start_date = now
+            user.subscription_end_date = now + timedelta(days=30)
+            user.save()
+            send_plan_activation_email(user, 'studio', 30)
+            count += 1
+        self.message_user(request, f"Successfully activated Studio plan for {count} user(s).")
 
     @admin.action(description="👑 Activate Enterprise Plan (30 Days)")
     def activate_enterprise_30_days(self, request, queryset):
         now = timezone.now()
-        updated = queryset.update(
-            subscription_plan='enterprise',
-            subscription_start_date=now,
-            subscription_end_date=now + timedelta(days=30)
-        )
-        self.message_user(request, f"Successfully activated Enterprise plan for {updated} user(s).")
+        count = 0
+        for user in queryset:
+            user.subscription_plan = 'enterprise'
+            user.subscription_start_date = now
+            user.subscription_end_date = now + timedelta(days=30)
+            user.save()
+            send_plan_activation_email(user, 'enterprise', 30)
+            count += 1
+        self.message_user(request, f"Successfully activated Enterprise plan for {count} user(s).")
 
     @admin.action(description="❌ Reset / Deactivate to Free Plan")
     def deactivate_subscription(self, request, queryset):

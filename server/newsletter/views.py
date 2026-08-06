@@ -1,3 +1,4 @@
+import threading
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -29,7 +30,7 @@ class NewsletterSubscribeView(APIView):
             )
             
             if not created and subscriber.is_active:
-                self.send_welcome_email(email)
+                threading.Thread(target=self.send_welcome_email, args=(email,), daemon=True).start()
                 return Response(
                     {
                         'message': 'Welcome email resent! Check your inbox.',
@@ -46,8 +47,8 @@ class NewsletterSubscribeView(APIView):
             # Set 24-day trial period
             subscriber.set_trial_period(24)
             
-            # Send welcome email
-            self.send_welcome_email(email)
+            # Send welcome email (non-blocking)
+            threading.Thread(target=self.send_welcome_email, args=(email,), daemon=True).start()
             
             return Response(
                 {
