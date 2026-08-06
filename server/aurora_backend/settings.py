@@ -13,11 +13,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Python 3.14 compatibility patch for Django Context copying
 try:
     import django.template.context
+    import copy
     def _safe_context_copy(self):
         obj = object.__new__(self.__class__)
         obj.dicts = self.dicts[:]
+        obj.template = getattr(self, 'template', None)
+        rc = getattr(self, 'render_context', None)
+        obj.render_context = copy.copy(rc) if rc is not None else None
         return obj
     django.template.context.BaseContext.__copy__ = _safe_context_copy
+    django.template.context.Context.__copy__ = _safe_context_copy
 except Exception as e:
     pass
 
