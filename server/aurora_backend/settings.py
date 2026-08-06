@@ -181,27 +181,31 @@ SIMPLE_JWT = {
 }
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = config(
+raw_cors = config(
     'CORS_ALLOWED_ORIGINS',
     default='http://localhost:5173,http://localhost:5174'
-).split(',')
+)
+CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in raw_cors.split(',') if o.strip()]
 
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF Settings
-CSRF_TRUSTED_ORIGINS = config(
+raw_csrf = config(
     'CSRF_TRUSTED_ORIGINS',
     default='http://localhost:5173,http://localhost:5174'
-).split(',')
+)
+CSRF_TRUSTED_ORIGINS = [o.strip().rstrip('/') for o in raw_csrf.split(',') if o.strip()]
 
 # Frontend URL for email links
-FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
+FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173').rstrip('/')
 
 # Add the frontend and backend URLs to trusted origins
-if FRONTEND_URL:
+if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 if RENDER_EXTERNAL_HOSTNAME:
-    CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+    render_origin = f'https://{RENDER_EXTERNAL_HOSTNAME}'.rstrip('/')
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
 
 # Security Settings for Production (Render)
 if not DEBUG:
